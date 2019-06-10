@@ -17,7 +17,6 @@
     "vendor-npcs",
     "player-groups",
     "progressive-respawn",
-    "telnet-networking",
     "websocket-networking"
   ],
   "dataSources": {
