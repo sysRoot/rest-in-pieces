@@ -140,9 +140,9 @@
     }
 
     #mudOutput {
-        height: 100%;
+        height: 85vh;
         width: 100%;
-
+        overflow: auto hidden;
         span {
             flex: 1;
             font-family: 'Roboto Mono', monospace;
