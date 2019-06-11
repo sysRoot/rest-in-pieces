@@ -5,13 +5,14 @@ export default class Output extends React.Component {
     super(props);
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    return false;
+  }
+
   render() {
     return (
       <>
-        <div id='mudOutput'>
-          {/* <form onSubmit={props.sendCommand}> */}
-          <p>&lt;Waiting&gt;</p>
-        </div>
+        <div id='mudOutput' />
       </>
     );
   }

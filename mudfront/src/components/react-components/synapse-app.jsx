@@ -4,6 +4,8 @@ import './synapse.scss';
 import Connect from './synapse-parts/synapse-connect';
 import Output from './synapse-parts/synapse-output';
 import Input from './synapse-parts/synapse-input';
+import PlayerStats from './synapse-parts/synapse-player-stats';
+// import PlayerTray from './synapse-parts/synapse-player-tray';
 
 export default class SynapseApp extends React.Component {
   constructor(props) {
@@ -14,7 +16,13 @@ export default class SynapseApp extends React.Component {
     this.state = {
       connected: false,
       message: '',
-      history: []
+      history: [],
+      playerData: {
+        attributes: {},
+        targets: {},
+        effects: {}
+      },
+      playerDataMounted: false
     };
   }
   componentDidMount() {}
@@ -36,7 +44,9 @@ export default class SynapseApp extends React.Component {
     // find links
     message = message.replace(
       /[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g,
-      '<a href="http://$&" target="_blank" tabindex="-1">$&</a>'
+      x => {
+        return `<a href="http://${x}" target="_blank" tabindex="-1">${x}</a>`;
+      }
     );
     span.innerHTML = message;
     span.classList.add('output-message');
@@ -53,27 +63,33 @@ export default class SynapseApp extends React.Component {
     if (data.type === 'message') {
       this.writeOutput(data.message);
     } else if (data.type === 'data') {
-      if (!this.playerData) {
-        this.playerData = {};
+      // if (!this.playerData) {
+      //   this.playerData = {};
+      // }
+      if (data.group === 'attributes') {
+        this.setState({
+          playerData: { attributes: data.data },
+          playerDataMounted: true
+        });
+      } else if (data.group === 'targets') {
+        this.setState({ playerData: { targets: data.data } });
+      } else if (data.group === 'effects') {
+        this.setState({ playerData: { effects: data.data } });
       }
-      this.set('playerData.' + data.group, data.data);
     }
   };
   _wsOnOpen = e => {
-    this._isConnected = true;
     this.writeOutput('Connected', 'info', true);
     console.log('Win');
   };
   _wsOnClose = e => {
     this.writeOutput('Connection Closed', 'info', true);
-    this.playerData = null;
-    this._isConnected = false;
+    this.setState({ playerData: {}, playerDataMounted: false });
     console.log('Wa-wa-wahhhhhhh');
   };
   _wsOnError = e => {
     console.log(e);
     this.writeOutput('Websocket Error', 'error', true);
-    this._isConnected = false;
   };
   changeHandler = e => {
     e.preventDefault();
@@ -118,7 +134,8 @@ export default class SynapseApp extends React.Component {
   _optionsSaved = () => {
     this._optionsOpen = false;
     let fontSize = parseInt(this.options.fontSize, 10);
-    this.$.output.style.fontSize = (isNaN(fontSize) ? 14 : fontSize) + 'px';
+    document.getElementById('mudOutput').style.fontSize =
+      (isNaN(fontSize) ? 14 : fontSize) + 'px';
     if (this.store) {
       this.store.set('options', this.options);
     }
@@ -133,9 +150,6 @@ export default class SynapseApp extends React.Component {
   render() {
     return (
       <div className='synapse-client'>
-        <div>
-          <p>THIS IS A WRECK</p>
-        </div>
         <Connect
           connect={this.connect}
           disconnect={this.disconnect}
@@ -146,6 +160,10 @@ export default class SynapseApp extends React.Component {
           changeHandler={this.changeHandler}
           value={this.state.message}
           message={this.messageInput}
+        />
+        <PlayerStats
+          player={this.state.playerData}
+          mounted={this.state.playerDataMounted}
         />
       </div>
     );
