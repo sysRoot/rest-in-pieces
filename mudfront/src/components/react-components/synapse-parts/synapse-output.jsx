@@ -6,6 +6,7 @@ export default class Output extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
+    
     return false;
   }
 

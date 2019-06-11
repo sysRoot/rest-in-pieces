@@ -67,14 +67,38 @@ export default class SynapseApp extends React.Component {
       //   this.playerData = {};
       // }
       if (data.group === 'attributes') {
-        this.setState({
-          playerData: { attributes: data.data },
-          playerDataMounted: true
+        this.setState(prevState => {
+          return {
+            playerData: {
+              attributes: data.data,
+              targets: prevState.targets,
+              effects: prevState.targets
+            },
+            playerDataMounted: true
+          };
         });
       } else if (data.group === 'targets') {
-        this.setState({ playerData: { targets: data.data } });
+        this.setState(prevState => {
+          return {
+            playerData: {
+              attributes: prevState.attributes,
+              targets: data.data,
+              effects: prevState.targets
+            },
+            playerDataMounted: true
+          };
+        });
       } else if (data.group === 'effects') {
-        this.setState({ playerData: { effects: data.data } });
+        this.setState(prevState => {
+          return {
+            playerData: {
+              attributes: prevState.attributes,
+              targets: prevState.targets,
+              effects: data.data
+            },
+            playerDataMounted: true
+          };
+        });
       }
     }
   };
@@ -84,7 +108,7 @@ export default class SynapseApp extends React.Component {
   };
   _wsOnClose = e => {
     this.writeOutput('Connection Closed', 'info', true);
-    this.setState({ playerData: {}, playerDataMounted: false });
+    // this.setState({ playerData: {}, playerDataMounted: false });
     console.log('Wa-wa-wahhhhhhh');
   };
   _wsOnError = e => {
