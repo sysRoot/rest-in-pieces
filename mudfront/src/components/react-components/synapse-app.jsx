@@ -30,7 +30,7 @@ export default class SynapseApp extends React.Component {
   }
 
   connect = e => {
-    this.websocket = new WebSocket('ws://localhost:40114');
+    this.websocket = new WebSocket('wss://localhost:40114');
     this.websocket.onopen = this._wsOnOpen;
     this.websocket.onclose = this._wsOnClose;
     this.websocket.onmessage = this._wsOnMessage;
