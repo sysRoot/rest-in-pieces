@@ -8,7 +8,7 @@ export default class Connect extends React.Component {
   render() {
     return (
       <>
-        <button onClick={this.props.connected === false ? this.props.connect : this.props.disconnect} >{this.props.connected === false ? 'Connect' : 'Disconnect'}</button>
+        <button className='connect-button' onClick={this.props.connected === false ? this.props.connect : this.props.disconnect} >{this.props.connected === false ? 'Connect' : 'Disconnect'}</button>
       </>
     );
   }

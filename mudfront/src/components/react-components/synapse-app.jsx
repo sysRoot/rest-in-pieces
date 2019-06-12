@@ -1,11 +1,11 @@
 import React from 'react';
 import AnsiUp from 'ansi_up';
 import './synapse.scss';
+import 'animate.css';
 import Connect from './synapse-parts/synapse-connect';
-import Output from './synapse-parts/synapse-output';
 import Input from './synapse-parts/synapse-input';
-import PlayerStats from './synapse-parts/synapse-player-stats';
-// import PlayerTray from './synapse-parts/synapse-player-tray';
+import PlayerStatBar from './synapse-parts/synapse-player-statbar';
+import PlayerTray from './synapse-parts/synapse-tray';
 
 export default class SynapseApp extends React.Component {
   constructor(props) {
@@ -13,19 +13,22 @@ export default class SynapseApp extends React.Component {
     this.ansiUp = new AnsiUp();
     this.ansiUp.use_classes = true;
     this.websocket;
+    this.historyIndex;
     this.state = {
       connected: false,
       message: '',
       history: [],
-      playerData: {
-        attributes: {},
-        targets: {},
-        effects: {}
-      },
-      playerDataMounted: false
+      historyIndex: 0,
+      playerAttr: {},
+      playerTar: [],
+      playerEff: {},
+      playerDataMounted: false,
+      messageOut: []
     };
   }
-  componentDidMount() {}
+  componentDidMount() {
+  }
+
   connect = e => {
     this.websocket = new WebSocket('ws://localhost:40114');
     this.websocket.onopen = this._wsOnOpen;
@@ -38,8 +41,8 @@ export default class SynapseApp extends React.Component {
     this.websocket.close();
     this.setState({ connected: false });
   };
+
   writeOutput = (message, elClass = '', raw = false) => {
-    let span = document.createElement('span');
     message = raw ? message : this.ansiUp.ansi_to_html(message);
     // find links
     message = message.replace(
@@ -48,12 +51,21 @@ export default class SynapseApp extends React.Component {
         return `<a href="http://${x}" target="_blank" tabindex="-1">${x}</a>`;
       }
     );
-    span.innerHTML = message;
+    let span = document.createElement(
+      'span'
+    );
+
     span.classList.add('output-message');
+    span.classList.add('animated');
+    span.classList.add('lightSpeedIn');
     if (elClass) {
       span.classList.add(elClass);
     }
+    span.innerHTML = message;
     document.getElementById('mudOutput').appendChild(span);
+    this.setState(prevState => {
+      return { messageOut: [...prevState.messageOut, span] };
+    });
     document.getElementById('mudOutput').scrollTop = document.getElementById(
       'mudOutput'
     ).scrollHeight;
@@ -63,42 +75,16 @@ export default class SynapseApp extends React.Component {
     if (data.type === 'message') {
       this.writeOutput(data.message);
     } else if (data.type === 'data') {
-      // if (!this.playerData) {
-      //   this.playerData = {};
-      // }
       if (data.group === 'attributes') {
-        this.setState(prevState => {
-          return {
-            playerData: {
-              attributes: data.data,
-              targets: prevState.targets,
-              effects: prevState.targets
-            },
-            playerDataMounted: true
-          };
+        this.setState({
+          playerAttr: data.data,
+          playerDataMounted: true
         });
       } else if (data.group === 'targets') {
-        this.setState(prevState => {
-          return {
-            playerData: {
-              attributes: prevState.attributes,
-              targets: data.data,
-              effects: prevState.targets
-            },
-            playerDataMounted: true
-          };
-        });
+        console.log(data.data);
+        this.setState({ playerTar: data.data });
       } else if (data.group === 'effects') {
-        this.setState(prevState => {
-          return {
-            playerData: {
-              attributes: prevState.attributes,
-              targets: prevState.targets,
-              effects: data.data
-            },
-            playerDataMounted: true
-          };
-        });
+        this.setState({ playerEff: data.data });
       }
     }
   };
@@ -108,7 +94,7 @@ export default class SynapseApp extends React.Component {
   };
   _wsOnClose = e => {
     this.writeOutput('Connection Closed', 'info', true);
-    // this.setState({ playerData: {}, playerDataMounted: false });
+    this.setState({ playerAttr: {}, playerDataMounted: false });
     console.log('Wa-wa-wahhhhhhh');
   };
   _wsOnError = e => {
@@ -120,7 +106,6 @@ export default class SynapseApp extends React.Component {
     this.setState({ [e.target.name]: e.target.value });
   };
   messageInput = e => {
-    // let message = this.state.inputVal;
     e.preventDefault();
     let message = this.state.message.trim();
     this.websocket.send(message);
@@ -130,6 +115,28 @@ export default class SynapseApp extends React.Component {
       };
     });
     return this.setState({ message: '' });
+  };
+  historyHandler = e => {
+    e.preventDefault();
+    if (e.keyCode === 38) {
+      if (this.state.history[this.state.historyIndex - 1]) {
+        this.setState(prevState => {
+          return { message: this.state.history[--prevState.historyIndex] };
+        });
+      }
+    }
+    if (e.keyCode === 40) {
+      if (this.state.history[this.state.historyIndex + 1]) {
+        this.setState(prevState => {
+          return { message: this.state.history[++prevState.historyIndex] };
+        });
+      } else {
+        this.setState(prevState => {
+          return { historyIndex: prevState.history.length };
+        });
+        this.setState({ message: '' });
+      }
+    }
   };
   _effectsVisible = () => {
     return this.playerData && this._effectsOpen;
@@ -173,20 +180,31 @@ export default class SynapseApp extends React.Component {
 
   render() {
     return (
-      <div className='synapse-client'>
+      <div id='synapse-client'>
         <Connect
           connect={this.connect}
           disconnect={this.disconnect}
           connected={this.state.connected}
         />
-        <Output />
+        <PlayerTray
+          mounted={this.state.playerDataMounted}
+          targets={this.state.playerTar}
+          effects={this.state.playerEff}
+          player={this.state.playerAttr}
+        />
+        <div id='mudOutput' ref={this.spans} />
+        {/* <Output messageOut={this.state.messageOut} /> */}
         <Input
           changeHandler={this.changeHandler}
           value={this.state.message}
           message={this.messageInput}
+          history={this.historyHandler}
         />
-        <PlayerStats
-          player={this.state.playerData}
+        {/* {console.log('playerData', this.state.playerData)}
+
+        {console.log('playerDataMounted', this.state.playerDataMounted)} */}
+        <PlayerStatBar
+          player={this.state.playerAttr}
           mounted={this.state.playerDataMounted}
         />
       </div>

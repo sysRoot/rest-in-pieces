@@ -1,7 +1,8 @@
 @import url("https://fonts.googleapis.com/css?family=PT+Mono&display=swap");
-
+@import 'bulma';
 html {
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 *, *:before, *:after {
@@ -15,7 +16,7 @@ html, body {
     box-sizing: border-box;
 }
 
-.synapse-client {
+#synapse-client {
     display: block;
     background-color: #000;
     height: 100%;
@@ -32,7 +33,6 @@ html, body {
     #mudOutput {
         height: calc(100vh - 72px);
         width: 100%;
-        overflow: auto hidden;
         font-family: 'PT Mono', monospace;
         font-size: 14px;
         white-space: pre-wrap;
@@ -202,8 +202,10 @@ html, body {
 }
 
 #player-status {
+    width: 80%;
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-around;
+    margin: 0 auto;
 
     #hp {
         display: flex;
@@ -211,7 +213,7 @@ html, body {
         justify-content: space-between;
 
         progress {
-            margin: unset;
+          margin: unset;
         }
     }
 
@@ -221,22 +223,50 @@ html, body {
         justify-content: space-between;
 
         progress {
-            margin: unset;
+          margin: unset;
         }
     }
+}
 
-    #stats {
-        display: flex;
-        align-items: center;
-        justify-content: space-evenly;
+#player-stats {
+  display: flex;
+  justify-content: space-evenly;
+  background: white;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 2px solid rgb(119, 119, 119);
+  border-radius: 0 20px 0 20px;
+}
+#player-targets {
+  display: flex;
+  background: white;
+  padding: 10px;
+  margin-bottom: 10px;
+  justify-content: space-evenly;
+  border: 2px solid rgb(119, 119, 119);
+  border-radius: 0 20px 0 20px;
+}
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 48px;
+}
 
-        div {
-            display: flex;
-            justify-content: space-around;
-        }
+.modal-main {
+    position: fixed;
+    width: 35%;
+    height: auto;
+    top: 50%;
+    right: 0;
+    transform: translate(-50%, -50%);
+}
 
-        div > div {
-            display: flex;
-        }
-    }
+.display-block {
+    display: block;
+}
+
+.display-none {
+    display: none;
 }
