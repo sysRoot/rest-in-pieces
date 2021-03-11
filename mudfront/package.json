@@ -11,7 +11,7 @@
     "@babel/plugin-transform-react-jsx": "^7.3.0",
     "acorn-jsx": "^5.0.1",
     "animate.css": "^3.7.2",
-    "ansi_up": "^4.0.3",
+    "ansi_up": "^5.0.0",
     "aurelia-animator-css": "^1.0.4",
     "aurelia-bootstrapper": "^2.3.2",
     "aurelia-fetch-client": "^1.0.0",
